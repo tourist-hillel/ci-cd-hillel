@@ -12,7 +12,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if self.scope['user'].is_anonymous:
             await self.close()
             return
-        
+
         self.room_group_name = 'chat_global'
         user = self.scope['user']
 
