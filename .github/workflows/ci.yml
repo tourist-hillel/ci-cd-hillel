@@ -93,7 +93,7 @@ jobs:
     deploy:
         runs-on: ubuntu-latest
         needs: [lint, test, security]
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/lytvynenko/deploy_cicd' && github.event_name == 'push'
         steps:
            - name: Checkout code
              uses: actions/checkout@v3

@@ -13,7 +13,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        self.room_group_name = 'chat_global11'
+        self.room_group_name = 'chat_global111'
         user = self.scope['user']
 
         if self.user_connections[user.username] >= 5:
