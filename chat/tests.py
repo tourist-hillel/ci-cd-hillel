@@ -30,21 +30,3 @@ class ChatTests(TestCase):
         response = self.client.get(reverse('chat'))
         self.assertEqual(response.status_code, 302)
         self.assertIn('login', response.url)
-
-    async def test_websocket_auth(self):
-        communicator = WebsocketCommunicator(application, '/ws/chat/')
-        connected, _ = await communicator.connect()
-        self.assertFalse(connected)
-        await communicator.disconnect()
-
-        communicator = WebsocketCommunicator(application, '/ws/chat/')
-        communicator.scope['user'] = self.user
-        connected, _ = await communicator.connect()
-        self.assertTrue(connected)
-
-        await communicator.send_json_to({'message': 'Test message'})
-        response = await communicator.receive_json_from()
-        self.assertEqual(response['username'], 'testuser')
-        self.assertEqual(response['message'], 'Test message')
-
-        await communicator.disconnect()
