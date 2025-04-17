@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from channels.testing import WebsocketCommunicator
 from chatapp.asgi import application
-import json
+
 
 class ChatTests(TestCase):
     def setUp(self):

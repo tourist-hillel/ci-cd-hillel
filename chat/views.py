@@ -4,9 +4,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 
+
 @login_required
 def index(request):
     return render(request, 'index.html')
+
 
 def register(request):
     if request.method == 'POST':
