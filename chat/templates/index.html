@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        function escapeHTML(str) {
+            return str.replace(/&/g, '&amp;')
+                     .replace(/</g, '&lt;')
+                     .replace(/>/g, '&gt;')
+                     .replace(/"/g, '&quot;')
+                     .replace(/'/g, '&#039;');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = "{{ request.user.username|escapejs }}";
+            if (!user) {
+                alert("Please log in");
+                window.location.href = "{% url 'login' %}";
+                return;
+            }
+
+            const ws = new WebSocket(
+                (window.location.protocol === 'https:' ? 'wss://' : 'ws://') +
+                window.location.host + '/ws/chat/'
+            );
+
+            ws.onopen = () => console.log('Connected to WebSocket');
+
+            ws.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                const messages = document.getElementById('messages');
+                const message = document.createElement('div');
+                message.innerHTML = `<strong>${escapeHTML(data.username)}</strong>: ${escapeHTML(data.message)}`;
+                messages.appendChild(message);
+                messages.scrollTop = messages.scrollHeight;
+            };
+
+            ws.onclose = (e) => {
+                if (e.code === 4001) {
+                    alert('Connection limit exceeded');
+                }
+                console.error('WebSocket closed:', e);
+            };
+
+            document.getElementById('chat-form').onsubmit = (e) => {
+                e.preventDefault();
+                const input = document.getElementById('message-input');
+                const message = input.value.trim();
+                if (message && message.length <= 1000) {
+                    ws.send(JSON.stringify({ message }));
+                    input.value = '';
+                }
+            };
+        });
+    </script>
+    <style>
+        #messages { height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
+        #chat-form { margin-top: 10px; }
+        .messages { margin-bottom: 10px; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    {% if user.is_authenticated %}
+        <h1>Welcome, {{ user.username }}</h1>
+        <div class="messages">
+            {% for message in messages %}
+                <p class="success">{{ message }}</p>
+            {% endfor %}
+        </div>
+        <div id="messages"></div>
+        <form id="chat-form">
+            <input type="text" id="message-input" maxlength="1000" required>
+            <button type="submit">Send</button>
+        </form>
+        <a href="{% url 'logout' %}">Logout</a>
+    {% else %}
+        <p>Please <a href="{% url 'login' %}">log in</a> to use the chat.</p>
+    {% endif %}
+</body>
+</html>
