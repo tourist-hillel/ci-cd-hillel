@@ -55,10 +55,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
         user = self.scope['user']
 
-        # await sync_to_async(Message.objects.create)(
-        #     user=user,
-        #     content=message
-        # )
 
         await self.channel_layer.group_send(
             self.room_group_name,
