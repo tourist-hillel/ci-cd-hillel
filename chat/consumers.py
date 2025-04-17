@@ -2,14 +2,12 @@ from collections import defaultdict
 import json
 import re
 from channels.generic.websocket import AsyncWebsocketConsumer
-from asgiref.sync import sync_to_async
-
-# from chat.models import Message
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
 
     user_connections = defaultdict(int)
+
     async def connect(self):
         if self.scope['user'].is_anonymous:
             await self.close()
@@ -55,7 +53,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return
         user = self.scope['user']
 
-
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -77,7 +74,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if re.search(r'<script', message, re.IGNORECASE):
             return False
         return True
-    
+
     # @sync_to_async
     # def get_user_connections(self, user):
     #     return len(self.channel_layer.group_channels('chat_global'))
