@@ -58,6 +58,7 @@ jobs:
              run: python manage.py test chat
              env:
                 DJANGO_SETTINGS_MODULE: chatapp.settings
+                REDIS_HOST: redis
     security:
         runs-on: ubuntu-latest
         steps:
