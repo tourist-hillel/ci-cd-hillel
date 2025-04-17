@@ -3,10 +3,10 @@ name: CI/CD Pipline
 on:
     push:
         branches:
-            - main
+            - lytvynenko/deploy_cicd
     pull_request:
         branches:
-            - main
+            - lytvynenko/deploy_cicd
 
 jobs:
     lint:
