@@ -114,6 +114,6 @@ jobs:
                 push: true
                 tags: |
                     ${{ secrets.DOCKER_HUB_USERNAME }}/chatapp:${{ github.sha }}
-                    ${{ secrets.DOCKER_HUB_PASSWORD }}/chatapp:latest
+                    ${{ secrets.DOCKER_HUB_USERNAME }}/chatapp:latest
                 build-args: |
                     BUILD_VERSION=${{ github.sha }}
