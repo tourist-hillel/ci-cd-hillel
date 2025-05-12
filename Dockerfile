@@ -20,4 +20,4 @@ COPY nginx.conf /etc/nginx/sites-available/default
 
 EXPOSE 80
 
-CMD ["/sur/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
