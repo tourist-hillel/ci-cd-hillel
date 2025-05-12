@@ -38,4 +38,4 @@ urlpatterns = [
     path('sentry-debug/', trigger_error),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-urlpatterns += debug_toolbar_urls()
+# urlpatterns += debug_toolbar_urls()
