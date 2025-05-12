@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-q#c#caqrd&t4x$=$nk21x!2rapdm9#mv(=hfpz2bg!9au=cp%v
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['hillel-deploy.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
