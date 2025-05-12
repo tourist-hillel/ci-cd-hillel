@@ -9,8 +9,11 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -36,11 +39,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     'channels',
     'chat',
+    'storage_app',
+    'debug_toolbar',
+    'accounts',
+    'axes',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -48,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'chatapp.urls'
@@ -99,16 +109,41 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
+    {
+        'NAME': 'accounts.validators.MinimumLengthValidator',
+        'OPTIONS':{
+            'min_length': 6
+        }
+    },
+    {
+        'NAME': 'accounts.validators.CharacterTypeValidator',
+    },
+    {
+        'NAME': 'accounts.validators.PasswordStrengthValidator',
+        'OPTIONS':{
+            'min_score': 2
+        }
+    },
+    {
+        'NAME': 'accounts.validators.NoRepetitiveCharsValidator',
+    },
+    {
+        'NAME': 'accounts.validators.PasswordHistoryValidator',
+        'OPTIONS':{
+            'history_limits': 2
+        }
+    },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',
+    'django.contrib.auth.backends.ModelBackend'
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -126,19 +161,131 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = False
 SECURE_SSL_REDIRECT = False
 WEBSOCKET_MESSAGE_SIZE_LIMIT = 1024
 
 CSRF_TRUSTED_ORIGINS = [
     'https://900e-2a09-bac5-5983-52d-00-84-ae.ngrok-free.app',
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
+    'https://localhost',
 ]
+
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "access_key": os.getenv("MINIO_ACCESS_KEY"),
+            "secret_key": os.getenv("MINIO_SECRET_KEY"),
+            "bucket_name": os.getenv("MINIO_BUCKET_NAME"),
+            "endpoint_url": os.getenv("MINIO_ENDPOINT"),
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+MINIO_ACCESS_KEY = os.getenv('MINIO_ACESS_KEY')
+MINIO_SECRET_KEY = os.getenv('MINIO_SECRET_KEY')
+MINIO_BUCKET_NAME = os.getenv('MINIO_BUCKET_NAME')
+MINIO_ENDPOINT = os.getenv('MINIO_ENDPOINT')
+
+
+AWS_ACCESS_KEY_ID = MINIO_ACCESS_KEY
+AWS_SECRET_ACCESS_KEY = MINIO_SECRET_KEY
+AWS_STORAGE_BUCKET_NAME = MINIO_BUCKET_NAME
+AWS_S3_ENDPOINT_URL = MINIO_ENDPOINT
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = True
+AWS_S3_FILE_OVERWRITE = True
+
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+    "0.0.0.0",
+    '192.168.155.1',
+]
+
+
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+import django.db.models.signals
+
+sentry_sdk.init(
+    dsn="https://afc904d0707be34ec1724cba30796f0b@o4507175453851648.ingest.us.sentry.io/4509248353206272",
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    enable_tracing=True,
+    integrations=[
+        DjangoIntegration(
+            transaction_style='url',
+            middleware_spans=True,
+            signals_spans=True,
+            signals_denylist=[
+                django.db.models.signals.pre_init,
+                django.db.models.signals.post_init
+            ],
+            cache_spans=True
+        ),
+    ],
+    send_default_pii=True,
+    environment='local',
+)
+
+LOGGING = {
+    'version': 1,
+    'disable_esxisting_loggers': False,
+    'handlers': {
+        'file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django.log'),
+            'maxBytes': 1024*1024*5,
+            'backupCount': 3,
+            'formatter': 'verbose',
+            'level': 'INFO'
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'formatter': 'simple',
+        }
+    },
+    'formatters':{
+        'verbose': {
+            'format': '[{asctime}] {levelname} {module} {process:d} {thread:d} {message}',
+            'style': '{'
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['file', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'chatapp': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

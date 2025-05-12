@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        {% if errors %}
+            <div>
+                <ul>
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="file">
+            <button type="submit" formaction="{% url 'upload_files' %}">Upload</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>File name</th>
+                    <th>File size</th>
+                    <th>Last modified</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                    <tr>
+                        <td>
+                            <a href="{{ file.file_url}}" target="_blank">{{ file.file_name }}</a>
+                        </td>
+                        <td>{{ file.size }}</td>
+                        <td>{{ file.last_modified }}</td>
+                        <td>
+                            <a href="#">Delete</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <td>No files</td>
+                {% endfor %}
+            </tbody>
+        </table>
+    </body>
+</html>
