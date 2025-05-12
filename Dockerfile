@@ -17,7 +17,6 @@ COPY . .
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY nginx.conf /etc/nginx/sites-available/default
 
-RUN python manage.py collectstatic --noinput
 
 EXPOSE 80
 
