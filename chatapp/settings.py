@@ -172,16 +172,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = False
-SECURE_SSL_REDIRECT = False
-WEBSOCKET_MESSAGE_SIZE_LIMIT = 1024
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://900e-2a09-bac5-5983-52d-00-84-ae.ngrok-free.app',
-    'https://localhost',
-    'https://hillel-deploy.onrender.com',
-]
+# CSRF_TRUSTED_ORIGINS = [
+#     'https://900e-2a09-bac5-5983-52d-00-84-ae.ngrok-free.app',
+#     'https://localhost',
+#     'https://hillel-deploy.onrender.com',
+# ]
 
 
 STORAGES = {
@@ -213,8 +209,6 @@ AWS_DEFAULT_ACL = None
 AWS_QUERYSTRING_AUTH = True
 AWS_S3_FILE_OVERWRITE = True
 
-SECURE_SSL_REDIRECT = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 INTERNAL_IPS = [
     "127.0.0.1",
